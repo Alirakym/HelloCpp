@@ -139,10 +139,17 @@ int main()
     if (player.health > 0)
     {
         std::cout <<"\n" << player.name << " WINS!\n";
+        player.gold = player.gold + enemy.gold;
+        std::cout << "\nReward: "<< enemy.gold <<" gold!\n";
+        enemy.gold = 0;
     }
     else
     {
         std::cout <<"\n" << enemy.name << " WINS!\n";
+        enemy.gold = enemy.gold + player.gold;
+        std::cout << "\n You lost: " << player.gold << " gold!\n";
+        player.gold = 0;
+
     }
 
     ShowProfile(player);
