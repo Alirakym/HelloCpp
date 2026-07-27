@@ -52,6 +52,111 @@ void ShowProfile(const Character& character)
     std::cout << "Gold: " << character.gold << "\n";
 }
 
+Character CreateEnemy() 
+{
+    Character newEnemy{};
+
+    std::cout << "Enter New Enemy name: ";
+    std::cin >> newEnemy.name;
+
+    std::cout << "New Enemy level: ";
+    std::cin >> newEnemy.level;
+
+    while (newEnemy.level <= 0) {
+        std::cout << "level must be greater than 0\n" << "Enter new enemy level: ";
+        std::cin >> newEnemy.level;
+    }
+
+    std::cout << "New Enemy health: ";
+    std::cin >> newEnemy.health;
+
+    while (newEnemy.health <= 0) {
+        std::cout << "health must be greater than 0\n" << "Enter new enemy health: ";
+        std::cin >> newEnemy.health;
+    }
+
+    std::cout << "New Enemy mana: ";
+    std::cin >> newEnemy.mana;
+    while (newEnemy.mana < 0) {
+        std::cout << "mana cannot be negative\n" << "Enter new enemy mana: ";
+        std::cin >> newEnemy.mana;
+    }
+    std::cout << "New Enemy gold: ";
+    std::cin >> newEnemy.gold;
+    while (newEnemy.gold <= 0) {
+        std::cout << "gold must be greater than 0\n" << "Enter new enemy gold: ";
+        std::cin >> newEnemy.gold;
+    }
+
+    return newEnemy;
+}
+
+void ShowEnemies(const std::vector<Character>& enemies) {
+    std::cout << "\n=== Enemy list ===\n";
+    for (const Character& currentEnemy : enemies)
+    {
+        std::cout << currentEnemy.name << " - health: "
+            << currentEnemy.health
+            << "\n";
+    }
+}
+
+std::size_t ChooseEnemy(const std::vector<Character>& enemies)
+{
+    int enemyChoice;
+
+    std::cout << "Choose your enemy 1-" << enemies.size() << " : ";
+    std::cin >> enemyChoice;
+
+    while (enemyChoice < 1 || enemyChoice > static_cast<int>(enemies.size()))
+    {
+        std::cout << "Choose a number from 1 to "
+            << enemies.size() << ": ";
+        std::cin >> enemyChoice;
+    }
+    
+    return static_cast<std::size_t>(enemyChoice - 1);
+}
+
+bool Fight(Character& player, Character& enemy) 
+{
+    int damage;
+    int round = 1;
+    int enemyDamage = 10;
+    while (enemy.health > 0 && player.health > 0)
+    {
+        std::cout << "\n=== Round " << round << " ===\n";
+
+        
+
+        std::cout << "Enter damage to " << enemy.name << ": ";
+        std::cin >> damage;
+        while (damage <= 0)
+        {
+            std::cout << "Damage must be greater than 0. Enter again: ";
+            std::cin >> damage;
+        }
+
+        ApplyDamage(enemy, damage);
+        ShowStatus(enemy);
+        std::cout << enemy.name << " health: " << enemy.health << "\n";
+
+        if (enemy.health > 0) {
+            std::cout << enemy.name << " attacks for " << enemyDamage << " damage.\n";
+            ApplyDamage(player, enemyDamage);
+            ShowStatus(player);
+
+        }
+
+        std::cout << player.name << " health: " << player.health << "\n";
+
+
+        round++;
+    }
+
+    return player.health > 0;
+}
+
 int main()
 {
     Character player{};
@@ -62,19 +167,12 @@ int main()
         {"Orc", 5, 100, 0, 40},
         {"Mage", 7, 80, 100, 70}
     };
-
-    for (std::size_t i = 0; i < enemies.size(); i++)
-    {
-        std::cout << "Enemy " << i + 1 << ": " << enemies[i].name << ", health: " << enemies[i].health << "\n";
-    }
-
-
-    int damage;
-    int round = 1;
-    int enemyDamage = 10;
-    int enemyChoice;
-
-    std::cout << "Enter player name: ";
+    
+    enemies.push_back(CreateEnemy());
+    
+    ShowEnemies(enemies);
+    
+    std::cout << "\nEnter player name: ";
     std::cin >> player.name;
 
     std::cout << "Enter player level: ";
@@ -89,17 +187,8 @@ int main()
     std::cout << "Enter player gold: ";
     std::cin >> player.gold;
 
-    std::cout << "Choose your enemy 1-3: ";
-    std::cin >> enemyChoice;
-
-    while (enemyChoice < 1 || enemyChoice > enemies.size())
-    {
-        std::cout << "Choose a number from 1 to "
-            << enemies.size() << ": ";
-        std::cin >> enemyChoice;
-    }
-
-    Character& enemy = enemies[enemyChoice - 1];
+    std::size_t enemyIndex = ChooseEnemy(enemies);
+    Character& enemy = enemies[enemyIndex];
 
     int spellCost = 20;
 
@@ -124,37 +213,9 @@ int main()
 
     std::cout << "Fight!\n";
 
-    while (enemy.health > 0 && player.health > 0)
-    {
-        std::cout << "\n=== Round " << round << " ===\n";
+    bool playerWon = Fight(player, enemy);
 
-        
-        std::cout << "Enter damage to "<<enemy.name<<": ";
-        std::cin >> damage;
-        while (damage <= 0)
-        {
-            std::cout << "Damage must be greater than 0. Enter again: ";
-            std::cin >> damage;
-        }
-
-        ApplyDamage(enemy, damage);
-        ShowStatus(enemy);
-        std::cout << enemy.name << " health: " << enemy.health << "\n";
-
-        if(enemy.health > 0){
-            std::cout << enemy.name << " attacks for " << enemyDamage << " damage.\n";
-            ApplyDamage(player, enemyDamage);
-            ShowStatus(player);
-
-        }
-        
-        std::cout << player.name << " health: " << player.health << "\n";
-        
-
-        round++;
-    }
-
-    if (player.health > 0)
+    if (playerWon)
     {
         std::cout <<"\n" << player.name << " WINS!\n";
         player.gold = player.gold + enemy.gold;
@@ -169,15 +230,17 @@ int main()
 
     ShowProfile(player);
     ShowProfile(enemy);
+
     std::cout << "\n=== Enemies after battle ===\n";
-    for (std::size_t i = 0; i < enemies.size(); i++)
+    for (const Character& currentEnemy : enemies)
     {
-        std::cout << enemies[i].name
-            << " - health: " << enemies[i].health
-            << ", gold: " << enemies[i].gold
+        std::cout << currentEnemy.name
+            << " - health: " << currentEnemy.health
+            << ", gold: " << currentEnemy.gold
             << "\n";
     }
 
 
     return 0;
+
 }
