@@ -82,6 +82,19 @@ int ReadInt(const std::string& prompt, int minValue)
     }
 }
 
+Character CreatePlayer()
+{
+    Character newPlayer{};
+    std::cout << "Enter player name: ";
+    std::cin >> newPlayer.name;
+
+    newPlayer.level = ReadInt("Enter player level: ", 1);
+    newPlayer.health = ReadInt("Enter player health: ", 1);
+    newPlayer.mana = ReadInt("Enter player mana: ", 0);
+    newPlayer.gold = ReadInt("Enter player gold: ", 0);
+    return newPlayer;
+}
+
 Character CreateEnemy() 
 {
     Character newEnemy{};
@@ -100,8 +113,9 @@ void ShowEnemies(const std::vector<Character>& enemies) {
     std::cout << "\n=== Enemy list ===\n";
     for (const Character& currentEnemy : enemies)
     {
-        std::cout << currentEnemy.name << " - health: "
-            << currentEnemy.health
+        std::cout << currentEnemy.name
+            << " - health: " << currentEnemy.health
+            << ", gold: " << currentEnemy.gold
             << "\n";
     }
 }
@@ -159,7 +173,7 @@ bool Fight(Character& player, Character& enemy)
 
 int main()
 {
-    Character player{};
+    Character player = CreatePlayer(); 
 
     std::vector<Character> enemies
     {
@@ -171,14 +185,6 @@ int main()
     enemies.push_back(CreateEnemy());
     
     ShowEnemies(enemies);
-    
-    std::cout << "\nEnter player name: ";
-    std::cin >> player.name;
-
-    player.level = ReadInt("Enter player level: ", 1);
-    player.health = ReadInt("Enter player health: ", 1);
-    player.mana = ReadInt("Enter player mana: ", 0);
-    player.gold = ReadInt("Enter player gold: ", 0);
 
     std::size_t enemyIndex = ChooseEnemy(enemies);
     Character& enemy = enemies[enemyIndex];
@@ -223,15 +229,7 @@ int main()
 
     ShowProfile(player);
     ShowProfile(enemy);
-
-    std::cout << "\n=== Enemies after battle ===\n";
-    for (const Character& currentEnemy : enemies)
-    {
-        std::cout << currentEnemy.name
-            << " - health: " << currentEnemy.health
-            << ", gold: " << currentEnemy.gold
-            << "\n";
-    }
+    ShowEnemies(enemies);
 
 
     return 0;
