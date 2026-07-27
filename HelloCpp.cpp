@@ -1,6 +1,7 @@
 ﻿#include <iostream>
 #include <string>
 #include <vector>
+#include <limits>
 
 struct Character
 {
@@ -52,6 +53,35 @@ void ShowProfile(const Character& character)
     std::cout << "Gold: " << character.gold << "\n";
 }
 
+int ReadInt(const std::string& prompt, int minValue)
+{
+    int value;
+
+    while (true)
+    {
+        std::cout << prompt;
+
+        if (std::cin >> value && value >= minValue)
+        {
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            return value;
+        }
+
+        if (std::cin.fail())
+        {
+            std::cout << "Enter a valid number.\n";
+            std::cin.clear();
+        }
+        else
+        {
+            std::cout << "Value must be at least " << minValue << ".\n";
+        }
+
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
+    }
+}
+
 Character CreateEnemy() 
 {
     Character newEnemy{};
@@ -59,35 +89,10 @@ Character CreateEnemy()
     std::cout << "Enter New Enemy name: ";
     std::cin >> newEnemy.name;
 
-    std::cout << "New Enemy level: ";
-    std::cin >> newEnemy.level;
-
-    while (newEnemy.level <= 0) {
-        std::cout << "level must be greater than 0\n" << "Enter new enemy level: ";
-        std::cin >> newEnemy.level;
-    }
-
-    std::cout << "New Enemy health: ";
-    std::cin >> newEnemy.health;
-
-    while (newEnemy.health <= 0) {
-        std::cout << "health must be greater than 0\n" << "Enter new enemy health: ";
-        std::cin >> newEnemy.health;
-    }
-
-    std::cout << "New Enemy mana: ";
-    std::cin >> newEnemy.mana;
-    while (newEnemy.mana < 0) {
-        std::cout << "mana cannot be negative\n" << "Enter new enemy mana: ";
-        std::cin >> newEnemy.mana;
-    }
-    std::cout << "New Enemy gold: ";
-    std::cin >> newEnemy.gold;
-    while (newEnemy.gold <= 0) {
-        std::cout << "gold must be greater than 0\n" << "Enter new enemy gold: ";
-        std::cin >> newEnemy.gold;
-    }
-
+    newEnemy.level = ReadInt("Enter new enemy level: ", 1);
+    newEnemy.health = ReadInt("Enter new enemy health: ", 1);
+    newEnemy.mana = ReadInt("Enter new enemy mana: ", 0);
+    newEnemy.gold = ReadInt("Enter new enemy gold: ", 0);
     return newEnemy;
 }
 
@@ -118,24 +123,18 @@ std::size_t ChooseEnemy(const std::vector<Character>& enemies)
     return static_cast<std::size_t>(enemyChoice - 1);
 }
 
-bool Fight(Character& player, Character& enemy) 
+bool Fight(Character& player, Character& enemy)
 {
-    int damage;
     int round = 1;
     int enemyDamage = 10;
     while (enemy.health > 0 && player.health > 0)
     {
         std::cout << "\n=== Round " << round << " ===\n";
 
-        
-
-        std::cout << "Enter damage to " << enemy.name << ": ";
-        std::cin >> damage;
-        while (damage <= 0)
-        {
-            std::cout << "Damage must be greater than 0. Enter again: ";
-            std::cin >> damage;
-        }
+        int damage = ReadInt(
+            "Enter damage to " + enemy.name + ": ",
+            1
+        );
 
         ApplyDamage(enemy, damage);
         ShowStatus(enemy);
@@ -157,6 +156,7 @@ bool Fight(Character& player, Character& enemy)
     return player.health > 0;
 }
 
+
 int main()
 {
     Character player{};
@@ -175,17 +175,10 @@ int main()
     std::cout << "\nEnter player name: ";
     std::cin >> player.name;
 
-    std::cout << "Enter player level: ";
-    std::cin >> player.level;
-
-    std::cout << "Enter player health: ";
-    std::cin >> player.health;
-
-    std::cout << "Enter player mana: ";
-    std::cin >> player.mana;
-
-    std::cout << "Enter player gold: ";
-    std::cin >> player.gold;
+    player.level = ReadInt("Enter player level: ", 1);
+    player.health = ReadInt("Enter player health: ", 1);
+    player.mana = ReadInt("Enter player mana: ", 0);
+    player.gold = ReadInt("Enter player gold: ", 0);
 
     std::size_t enemyIndex = ChooseEnemy(enemies);
     Character& enemy = enemies[enemyIndex];
