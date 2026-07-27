@@ -1,5 +1,6 @@
 ﻿#include <iostream>
 #include <string>
+#include <vector>
 
 struct Character
 {
@@ -54,19 +55,24 @@ void ShowProfile(const Character& character)
 int main()
 {
     Character player{};
-    
-    Character enemy{
-       "Goblin",
-       3,
-       60,
-       0,
-       25
+
+    std::vector<Character> enemies
+    {
+        {"Goblin", 3, 60, 0, 25},
+        {"Orc", 5, 100, 0, 40},
+        {"Mage", 7, 80, 100, 70}
     };
+
+    for (std::size_t i = 0; i < enemies.size(); i++)
+    {
+        std::cout << "Enemy " << i + 1 << ": " << enemies[i].name << ", health: " << enemies[i].health << "\n";
+    }
 
 
     int damage;
     int round = 1;
     int enemyDamage = 10;
+    int enemyChoice;
 
     std::cout << "Enter player name: ";
     std::cin >> player.name;
@@ -82,6 +88,18 @@ int main()
 
     std::cout << "Enter player gold: ";
     std::cin >> player.gold;
+
+    std::cout << "Choose your enemy 1-3: ";
+    std::cin >> enemyChoice;
+
+    while (enemyChoice < 1 || enemyChoice > enemies.size())
+    {
+        std::cout << "Choose a number from 1 to "
+            << enemies.size() << ": ";
+        std::cin >> enemyChoice;
+    }
+
+    Character& enemy = enemies[enemyChoice - 1];
 
     int spellCost = 20;
 
@@ -146,14 +164,20 @@ int main()
     else
     {
         std::cout <<"\n" << enemy.name << " WINS!\n";
-        enemy.gold = enemy.gold + player.gold;
-        std::cout << "\n You lost: " << player.gold << " gold!\n";
-        player.gold = 0;
-
+        std::cout << "\nYou don't receive reward!";
     }
 
     ShowProfile(player);
     ShowProfile(enemy);
-    
+    std::cout << "\n=== Enemies after battle ===\n";
+    for (std::size_t i = 0; i < enemies.size(); i++)
+    {
+        std::cout << enemies[i].name
+            << " - health: " << enemies[i].health
+            << ", gold: " << enemies[i].gold
+            << "\n";
+    }
+
+
     return 0;
 }
