@@ -82,6 +82,29 @@ int ReadInt(const std::string& prompt, int minValue)
     }
 }
 
+int ReadIntRange(
+    const std::string& prompt,
+    int minValue,
+    int maxValue
+)
+{
+    while (true)
+    {
+        int value = ReadInt(prompt, minValue);
+
+        if (value <= maxValue)
+        {
+            return value;
+        }
+
+        std::cout << "Value must be between "
+            << minValue
+            << " and "
+            << maxValue
+            << ".\n";
+    }
+}
+
 Character CreatePlayer()
 {
     Character newPlayer{};
@@ -122,17 +145,8 @@ void ShowEnemies(const std::vector<Character>& enemies) {
 
 std::size_t ChooseEnemy(const std::vector<Character>& enemies)
 {
-    int enemyChoice;
-
-    std::cout << "Choose your enemy 1-" << enemies.size() << " : ";
-    std::cin >> enemyChoice;
-
-    while (enemyChoice < 1 || enemyChoice > static_cast<int>(enemies.size()))
-    {
-        std::cout << "Choose a number from 1 to "
-            << enemies.size() << ": ";
-        std::cin >> enemyChoice;
-    }
+    int maxChoice = static_cast<int>(enemies.size());
+    int enemyChoice = ReadIntRange("Choose your enemy 1-" + std::to_string(maxChoice) + ": ", 1, maxChoice);
     
     return static_cast<std::size_t>(enemyChoice - 1);
 }
@@ -203,6 +217,7 @@ int main()
         std::cout << "\nMagic: Not enough mana!\n";
     }
 
+
     std::cout << "\nBattle starts in:\n";
 
     for (int i = 3; i >= 1; i--)
@@ -220,15 +235,16 @@ int main()
         player.gold = player.gold + enemy.gold;
         std::cout << "\nReward: "<< enemy.gold <<" gold!\n";
         enemy.gold = 0;
+        ShowProfile(enemy);
     }
     else
     {
         std::cout <<"\n" << enemy.name << " WINS!\n";
         std::cout << "\nYou don't receive reward!";
+        ShowProfile(enemy);
     }
 
     ShowProfile(player);
-    ShowProfile(enemy);
     ShowEnemies(enemies);
 
 
