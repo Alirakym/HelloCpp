@@ -187,6 +187,8 @@ bool Fight(Character& player, Character& enemy)
 
 int main()
 {
+	std::cout << "\n=== Welcome to the Battle Game ===\n";
+
     Character player = CreatePlayer(); 
 
     std::vector<Character> enemies
