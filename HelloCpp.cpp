@@ -43,6 +43,16 @@ bool CanCastSpell(int mana, int spellCost)
     return mana >= spellCost;
 }
 
+bool SpendMana(Character& character, int manaCost)
+{
+    if (character.mana < manaCost || manaCost <= 0)
+    {
+        return false;
+    }
+	character.mana -= manaCost;
+	return true;
+}
+
 void ShowProfile(const Character& character)
 {
     std::cout << "\n=== Character Profile ===\n";
