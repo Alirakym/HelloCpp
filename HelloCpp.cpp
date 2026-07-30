@@ -8,6 +8,7 @@ struct Character
     std::string name;
     int level = 0;
     int health = 0;
+	int maxHealth = 0;
     int mana = 0;
     int gold = 0;
 };
@@ -16,15 +17,15 @@ void ShowStatus(const Character& character)
 {
     if (character.health <= 0)
     {
-        std::cout <<character.name << " Status: Dead\n";
+        std::cout <<"\n"<< character.name << " Status: Dead\n";
     }
     else if (character.health <= 25)
     {
-        std::cout << character.name << " Status: Critical\n";
+        std::cout <<"\n"<< character.name << " Status: Critical\n";
     }
     else
     {
-        std::cout << character.name << " Status: Alive\n";
+        std::cout <<"\n"<< character.name << " Status: Alive\n";
     }
 }
 
@@ -53,12 +54,37 @@ bool SpendMana(Character& character, int manaCost)
 	return true;
 }
 
+bool Heal(Character&character, int healAmount)
+{
+    if (healAmount <= 0)
+    {
+		std::cout << "Heal amount must be greater than 0.\n";
+		return false;
+    }
+    if (character.health <= 0)
+    {
+		std::cout << character.name << " is dead and cannot be healed.\n";
+		return false;
+    }
+	if (character.health >= character.maxHealth)
+	{
+		std::cout << character.name << " is already at full health.\n";
+		return false;
+	}
+	character.health += healAmount;
+	if (character.health > character.maxHealth)
+	{
+		character.health = character.maxHealth;
+	}
+	return true;
+}
+
 void ShowProfile(const Character& character)
 {
     std::cout << "\n=== Character Profile ===\n";
     std::cout << "Name: " << character.name << "\n";
     std::cout << "Level: " << character.level << "\n";
-    std::cout << "Health: " << character.health << "\n";
+    std::cout << "Health: " << character.health << "/" << character.maxHealth << "\n";
     std::cout << "Mana: " << character.mana << "\n";
     std::cout << "Gold: " << character.gold << "\n";
 }
@@ -118,11 +144,12 @@ int ReadIntRange(
 Character CreatePlayer()
 {
     Character newPlayer{};
-    std::cout << "Enter player name: ";
+    std::cout << "\nEnter player name: ";
     std::cin >> newPlayer.name;
 
     newPlayer.level = ReadInt("Enter player level: ", 1);
-    newPlayer.health = ReadInt("Enter player health: ", 1);
+    newPlayer.maxHealth = ReadInt("Enter player max health: ", 1);
+    newPlayer.health = newPlayer.maxHealth;
     newPlayer.mana = ReadInt("Enter player mana: ", 0);
     newPlayer.gold = ReadInt("Enter player gold: ", 0);
     return newPlayer;
@@ -132,11 +159,12 @@ Character CreateEnemy()
 {
     Character newEnemy{};
 
-    std::cout << "Enter New Enemy name: ";
+    std::cout << "\nEnter New Enemy name: ";
     std::cin >> newEnemy.name;
 
     newEnemy.level = ReadInt("Enter new enemy level: ", 1);
-    newEnemy.health = ReadInt("Enter new enemy health: ", 1);
+    newEnemy.maxHealth = ReadInt("Enter new enemy max health: ", 1);
+    newEnemy.health = newEnemy.maxHealth;
     newEnemy.mana = ReadInt("Enter new enemy mana: ", 0);
     newEnemy.gold = ReadInt("Enter new enemy gold: ", 0);
     return newEnemy;
@@ -147,7 +175,7 @@ void ShowEnemies(const std::vector<Character>& enemies) {
     for (const Character& currentEnemy : enemies)
     {
         std::cout << currentEnemy.name
-            << " - health: " << currentEnemy.health
+			<< " - health: " << currentEnemy.health << "/" << currentEnemy.maxHealth
             << ", gold: " << currentEnemy.gold
             << "\n";
     }
@@ -200,12 +228,12 @@ int main()
 	std::cout << "\n=== Welcome to the Battle Game ===\n";
 
     Character player = CreatePlayer(); 
-
+    
     std::vector<Character> enemies
     {
-        {"Goblin", 3, 60, 0, 25},
-        {"Orc", 5, 100, 0, 40},
-        {"Mage", 7, 80, 100, 70}
+        {"Goblin", 3, 60, 60, 0, 25},
+        {"Orc", 5, 100, 100, 0, 40},
+        {"Mage", 7, 80, 80, 100, 70}
     };
     
     enemies.push_back(CreateEnemy());
