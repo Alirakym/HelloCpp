@@ -13,6 +13,28 @@ struct Character
     int gold = 0;
 };
 
+enum class Action {
+    Attack = 1,
+    CastSpell = 2,
+    Heal = 3,
+    Exit = 4
+};
+
+enum class BattleResult
+{
+    Victory,
+    Defeat,
+    Escaped
+};
+
+void ShowBattleMenu() {
+    std::cout << "\n=== Battle Menu ===\n";
+    std::cout << "1. Attack\n";
+    std::cout << "2. Cast spell\n";
+    std::cout << "3. Heal\n";
+    std::cout << "4. Exit\n";
+}
+
 void ShowStatus(const Character& character)
 {
     if (character.health <= 0)
@@ -166,6 +188,17 @@ int ReadIntRange(
     }
 }
 
+Action ReadAction() 
+{
+    ShowBattleMenu();
+
+    int choice = ReadIntRange("Choose action: ", 1, 4);
+
+    Action action = static_cast<Action>(choice);
+
+    return action;
+}
+
 Character CreatePlayer()
 {
     Character newPlayer{};
@@ -246,27 +279,95 @@ std::size_t ChooseEnemy(const std::vector<Character>& enemies)
     return static_cast<std::size_t>(enemyChoice - 1);
 }
 
-bool Fight(Character& player, Character& enemy)
+BattleResult Fight(Character& player, Character& enemy)
 {
     int round = 1;
     const int enemyDamage = 10;
+    const int spellCost = 20;
+    const int spellDamage = 25;
+    const int healAmount = 30;
 
     while (enemy.health > 0 && player.health > 0)
     {
         std::cout << "\n=== Round " << round << " ===\n";
 
-        int damage = ReadInt(
-            "Enter damage to " + enemy.name + ": ",
-            1
-        );
+        Action action = ReadAction();
 
-        ApplyDamage(enemy, damage);
-        ShowStatus(enemy);
+        bool actionSucceeded = false;
 
-        std::cout << enemy.name
-            << " health: "
-            << enemy.health
-            << "\n";
+        switch (action)
+        {
+        case Action::Attack:
+        {
+            int damage = ReadInt(
+                "Enter damage to " + enemy.name + ": ",
+                1
+            );
+
+            ApplyDamage(enemy, damage);
+            actionSucceeded = true;
+
+            ShowStatus(enemy);
+
+            std::cout << enemy.name
+                << " health: "
+                << enemy.health
+                << "\n";
+            break;
+        }
+
+        case Action::CastSpell:
+        {
+            if (!SpendMana(player, spellCost)) 
+            {
+                std::cout << "Not enough mana.\n";
+                break;
+            }
+
+            ApplyDamage(enemy, spellDamage);
+            std::cout << player.name
+                << " casts a spell for "
+                << spellDamage
+                << " damage.\n";
+
+            ShowStatus(enemy);
+            
+            std::cout << enemy.name
+                << " health: "
+                << enemy.health
+                << "\n";
+
+            std::cout << player.name
+                << " mana: "
+                << player.mana
+                << "\n";
+
+            actionSucceeded = true;
+            break;
+        }
+
+        case Action::Heal:
+        {
+            if (!Heal(player, healAmount))
+            {
+                break;
+            }
+            actionSucceeded = true;
+            std::cout << player.name << " heals\n";
+            std::cout << player.name << " health: " << player.health << "/" << player.maxHealth<<"\n";
+            
+            break;
+        }
+
+        case Action::Exit:
+            std::cout << "Player left the battle.\n";
+            return BattleResult::Escaped;
+        }
+
+        if (!actionSucceeded)
+        {
+            continue;
+        }
 
         if (enemy.health > 0)
         {
@@ -287,7 +388,11 @@ bool Fight(Character& player, Character& enemy)
         round++;
     }
 
-    return player.health > 0;
+    if (player.health > 0) {
+        return BattleResult::Victory;
+    }
+
+    return BattleResult::Defeat;
 }
 
 bool DamageCharacterByName(
@@ -343,6 +448,7 @@ int main()
     Character player = CreatePlayer();
 
     std::vector<Character> party{
+        player,
         {"DPS", 10, 100, 100, 50, 200},
         {"TANK", 10, 200, 200, 30, 100},
         {"HEALER", 10, 60, 60, 100, 150}
@@ -407,10 +513,11 @@ int main()
 
     std::cout << "Fight!\n";
 
-    bool playerWon = Fight(player, enemy);
+    BattleResult battleResult = Fight(player, enemy);
 
-    if (playerWon)
+    switch (battleResult)
     {
+    case BattleResult::Victory:
         std::cout << "\n" << player.name << " WINS!\n";
 
         player.gold += enemy.gold;
@@ -421,17 +528,20 @@ int main()
 
         enemy.gold = 0;
         ShowProfile(enemy);
-    }
-    else
-    {
+        break;
+
+    case BattleResult::Defeat:
         std::cout << "\n" << enemy.name << " WINS!\n";
         std::cout << "\nYou don't receive a reward!\n";
-
         ShowProfile(enemy);
+        break;
+
+    case BattleResult::Escaped:
+        std::cout << "\nYou escaped from the battle.\n";
+        break;
     }
 
     ShowProfile(player);
     ShowEnemies(enemies);
 
-    return 0;
 }
